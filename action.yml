@@ -1,4 +1,4 @@
-name: 'summary-issues'
+name: 'Summary Issues'
 description: 'Automatically updating issue descriptions that aggregate comments from other issues.'
 inputs:
   summaryCommentRegex:
