@@ -1,0 +1,15 @@
+name: 'summary-issues'
+description: 'Automatically updating issue descriptions that aggregate comments from other issues.'
+inputs:
+  summaryCommentRegex:
+    description: 'The newest comment on an issue that matches this regular expression is used in the summary. If not provided, the most recent comment is always used.'
+    required: false
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - '-summaryCommentRegex'
+    - ${{ inputs.summaryCommentRegex }}
+branding:
+  icon: 'message-square'
+  color: 'green'

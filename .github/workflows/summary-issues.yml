@@ -1,0 +1,29 @@
+on:
+  schedule:
+    - cron: '0 23 * * 1' # Every Monday at 11pm UTC
+  issues:
+  issue_comment:
+    
+jobs:
+  print_context:
+    name: Print debugging info
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          EVENT_CONTEXT: ${{ toJSON(github) }}
+        run: |
+          echo $EVENT_CONTEXT
+  summary-issues:
+    name: Update summary issues
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./ # If you were using this in your project, this would be sourcegraph/summarize
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          summaryCommentRegex: '🟢|🟡|🔴'
