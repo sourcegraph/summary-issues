@@ -164,6 +164,7 @@ func getSummaryIssues(user string, labels labels) ([]*graphqlIssue, error) {
 						labels(first: 100) {
 							nodes {
 								name
+								description
 							}
 						}
 					}
@@ -234,7 +235,11 @@ func generateIssueSummary(opts *options, si issue) (string, error) {
 	nsl := si.labels.nonSummaryLabels()
 	for _, sl := range nsl {
 		if len(nsl) > 1 {
-			fmt.Fprintf(body, "# %s\n\n", sl.Name)
+			if sl.Description != "" {
+				fmt.Fprintf(body, "# %s\n\n", sl.Description)
+			} else {
+				fmt.Fprintf(body, "# %s\n\n", sl.Name)
+			}
 		}
 
 		for _, i := range labels[sl.Name] {
@@ -297,6 +302,7 @@ func searchIssues(query string) ([]*graphqlIssue, error) {
 						labels(first: 100) {
 							nodes {
 								name
+								description
 							}
 						}
 						comments(last: 100) {
@@ -429,7 +435,8 @@ type graphqlIssue struct {
 }
 
 type label struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type labels []label
