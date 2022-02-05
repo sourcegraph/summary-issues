@@ -231,9 +231,12 @@ func generateIssueSummary(opts *options, si issue) (string, error) {
 		}
 	}
 
-	fmt.Printf("%#v", labels)
-	for _, sl := range si.labels.nonSummaryLabels() {
-		fmt.Fprintf(body, "# %s\n\n", sl.Name)
+	nsl := si.labels.nonSummaryLabels()
+	for _, sl := range nsl {
+		if len(nsl) > 1 {
+			fmt.Fprintf(body, "# %s\n\n", sl.Name)
+		}
+
 		for _, i := range labels[sl.Name] {
 			fmt.Fprintf(body, "## [%s](%s)\n\n", i.Title, i.URL)
 			if c := i.Comments.Nodes.lastMatch(opts.summaryCommentRegex); c != nil {
@@ -245,7 +248,7 @@ func generateIssueSummary(opts *options, si issue) (string, error) {
 		}
 
 		if len(labels[sl.Name]) == 0 {
-			fmt.Fprintf(body, "\nNo matching issues.\n")
+			fmt.Fprintf(body, "No matching issues.\n\n")
 		}
 	}
 
