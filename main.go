@@ -291,6 +291,11 @@ func searchIssues(query string) ([]*graphqlIssue, error) {
 						author {
 							login
 						}
+						labels(first: 100) {
+							nodes {
+								name
+							}
+						}
 						comments(last: 100) {
 							nodes {
 								author {
