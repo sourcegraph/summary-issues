@@ -217,22 +217,32 @@ func generateIssueSummary(opts *options, si issue) (string, error) {
 	content := false
 	body := &strings.Builder{}
 	if re := opts.summaryCommentRegex.String(); re == "" {
-		fmt.Fprintf(body, "_This is generated from the newest comment on %s._\n", issuesWithMatchingLabels)
+		fmt.Fprintf(body, "_This is generated from the newest comment on %s._\n\n", issuesWithMatchingLabels)
 	} else {
-		fmt.Fprintf(body, "_This is generated from the newest comment that matches the regular expression `%s` on %s._\n", re, issuesWithMatchingLabels)
+		fmt.Fprintf(body, "_This is generated from the newest comment that matches the regular expression `%s` on %s._\n\n", re, issuesWithMatchingLabels)
 	}
 
+	labels := map[string][]*graphqlIssue{}
 	for _, i := range issues {
 		if i.ID == si.id {
 			continue
 		}
-		content = true
-		fmt.Fprintf(body, "## [%s](%s)\n", i.Title, i.URL)
-		if c := i.Comments.Nodes.lastMatch(opts.summaryCommentRegex); c != nil {
-			fmt.Fprintln(body, replaceHeadings(c.Body))
-			fmt.Fprintf(body, "\n\n_Updated %s by @%s_\n\n", c.UpdatedAt.Format("2006-01-02 15:04:05 MST"), c.Author.Login)
-		} else {
-			fmt.Fprintln(body, "_No update_")
+		for _, l := range i.Labels.Nodes {
+			labels[l.Name] = append(labels[l.Name], i)
+		}
+	}
+
+	for _, sl := range si.labels.nonSummaryLabels() {
+		fmt.Fprintf(body, "# %s\n\n", sl.Name)
+		for _, i := range labels[sl.Name] {
+			content = true
+			fmt.Fprintf(body, "## [%s](%s)\n\n", i.Title, i.URL)
+			if c := i.Comments.Nodes.lastMatch(opts.summaryCommentRegex); c != nil {
+				fmt.Fprintln(body, replaceHeadings(c.Body))
+				fmt.Fprintf(body, "\n\n_Updated %s by @%s_\n\n", c.UpdatedAt.Format("2006-01-02 15:04:05 MST"), c.Author.Login)
+			} else {
+				fmt.Fprintln(body, "_No update_\n\n")
+			}
 		}
 	}
 
