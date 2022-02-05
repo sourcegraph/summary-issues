@@ -214,7 +214,6 @@ func generateIssueSummary(opts *options, si issue) (string, error) {
 		issuesWithMatchingLabels = fmt.Sprintf("[%s](%s)", issuesWithMatchingLabels, searchURL(query))
 	}
 
-	content := false
 	body := &strings.Builder{}
 	if re := opts.summaryCommentRegex.String(); re == "" {
 		fmt.Fprintf(body, "_This is generated from the newest comment on %s._\n\n", issuesWithMatchingLabels)
@@ -232,22 +231,22 @@ func generateIssueSummary(opts *options, si issue) (string, error) {
 		}
 	}
 
+	fmt.Printf("%#v", labels)
 	for _, sl := range si.labels.nonSummaryLabels() {
 		fmt.Fprintf(body, "# %s\n\n", sl.Name)
 		for _, i := range labels[sl.Name] {
-			content = true
 			fmt.Fprintf(body, "## [%s](%s)\n\n", i.Title, i.URL)
 			if c := i.Comments.Nodes.lastMatch(opts.summaryCommentRegex); c != nil {
 				fmt.Fprintln(body, replaceHeadings(c.Body))
-				fmt.Fprintf(body, "\n\n_Updated %s by @%s_\n\n", c.UpdatedAt.Format("2006-01-02 15:04:05 MST"), c.Author.Login)
+				fmt.Fprintf(body, "\n_Updated %s by @%s_\n\n", c.UpdatedAt.Format("2006-01-02 15:04:05 MST"), c.Author.Login)
 			} else {
-				fmt.Fprintln(body, "_No update_\n\n")
+				fmt.Fprint(body, "_No update_\n\n")
 			}
 		}
-	}
 
-	if !content {
-		fmt.Fprintf(body, "\nNo matching issues.\n")
+		if len(labels[sl.Name]) == 0 {
+			fmt.Fprintf(body, "\nNo matching issues.\n")
+		}
 	}
 
 	return body.String(), nil
