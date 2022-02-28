@@ -189,7 +189,7 @@ func updateSummaryIssue(opts *options, i issue) error {
 	}
 
 	return graphql(`
-		mutation UpdateIssue ($id: String!, $body: String!) {
+		mutation UpdateIssue ($id: ID!, $body: String!) {
 			updateIssue(input: {
 				id: $id,
 				body: $body
